@@ -133,17 +133,82 @@
 ;; It looks like we can do a binary by bit filter against the initial inputs.
 ;; And it looks that we need to do this in a recursive mode.
 ;; Expected sequence of actions:
-;; 1. Calculate gamma-epsilon pair for given input
-;; 2. Using gamma:
-;; 3. Take leftmost bit from gamma.
-;; 4. Filter all numbers in input that have same bit set.
-;; 4. Check if we have more than one number left in input and return if we left
-;;    with only one.
-;; 5. Move to the next bit in gamma and repeat from step 4.
-;; 6. Result of this is ```oxygen generator rating```
-;; 7. Using epsilon instead of gamma will give us ```CO2 scrubber rating```
-;;
-;; Note that we can actually do this in "one sitting" for given input and collect both
-;; oxygen and scrubber ratings. This is due to reason that number is always goes in only one
-;; bucket, due to nature of gamma being inverse of epsilon, and we are effectively branching
-;; on each step.
+;; 1. Calculate prevalent leftmost bit
+
+(defn result [name x]
+  (apply merge-with
+         (fn [val-in-result val-in-later]
+           (if (= :zero val-in-later)
+             (update val-in-result :zero inc)
+             (update val-in-result :one inc)))
+         (initial-reducer-value x)
+         (mapcat (fn [x] (map-indexed (fn [idx itm] {idx (if (= itm \0) :zero :one)}) x))
+                 (clojure.string/split-lines (slurp (str "resources/" name ".txt"))))))
+
+;; Create prevalent map:
+(defn prevalent-map
+  [input]
+  (let [f (fn [x] (apply merge (map-indexed (fn [idx itm] {idx (if (= itm \0) :zero :one)}) x)))]
+    (map f input)))
+
+(defn frequencies-for-idx [m idx]
+  (frequencies (map #(get % idx) m)))
+
+;; Compute oxygen generator number:
+(loop [input (clojure.string/split-lines (slurp (str "resources/03_example.txt")))
+       idx   0]
+  (let [freq       (frequencies-for-idx (prevalent-map input) idx)
+        filter-bit (if (<= (:zero freq) (:one freq)) \1 \0)
+        result     (filter (fn [x] (= (nth x idx) filter-bit)) input)]
+    (if (nil? (second result))
+      (first result)
+      (recur result (inc idx)))))
+
+;; To compute co2 scrubber number we only need to select uncommon number:
+(loop [input (clojure.string/split-lines (slurp (str "resources/03_example.txt")))
+       idx   0]
+  (let [freq       (frequencies-for-idx (prevalent-map input) idx)
+        filter-bit (if (<= (:zero freq) (:one freq)) \0 \1)
+        result     (filter (fn [x] (= (nth x idx) filter-bit)) input)]
+    (if (nil? (second result))
+      (first result)
+      (recur result (inc idx)))))
+
+;; Now we need to extract common part into function and have ability to pass "metadata" in.
+;; Metadata in our case is a file name and length of numbers.
+;; We can actually read a first number and infer length of numbers instead of hard-coding it.
+
+(defn find-rating
+  [type name]
+  (let [filter-bit (fn [freq]
+                     (if (= type :o2)
+                       (if (<= (:zero freq) (:one freq)) \1 \0)
+                       (if (<= (:zero freq) (:one freq)) \0 \1)))
+        input (clojure.string/split-lines (slurp (str "resources/" name ".txt")))]
+    (loop [input input
+           idx   0]
+      (let [freq       (frequencies-for-idx (prevalent-map input) idx)
+            filter-bit (filter-bit freq)
+            result     (filter (fn [x] (= (nth x idx) filter-bit)) input)]
+        (if (nil? (second result))
+          (first result)
+          (recur result (inc idx)))))))
+
+(find-rating :o2 "03_example")
+(find-rating :co2 "03_example")
+
+(Integer/parseInt (find-rating :o2 "03_example") 2)
+(Integer/parseInt (find-rating :co2 "03_example") 2)
+
+
+(find-rating :o2 "03_puzzle")
+(find-rating :co2 "03_puzzle")
+
+
+(Integer/parseInt (find-rating :o2 "03_puzzle") 2)
+(Integer/parseInt (find-rating :co2 "03_puzzle") 2)
+
+;; Puzzle result
+(* (Integer/parseInt (find-rating :o2 "03_puzzle") 2)
+   (Integer/parseInt (find-rating :co2 "03_puzzle") 2))
+
