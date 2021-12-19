@@ -7,8 +7,10 @@
 (clerk/serve! {:watch-paths ["src/aoc2021"]})
 
 (comment
+  '(require [nextjournal.clerk :as clerk])
   (clerk/show! "src/aoc2021/03.clj")
   (clerk/build-static-app! {:paths ["src/aoc2021/01.clj"
                                     "src/aoc2021/02.clj"
                                     "src/aoc2021/03.clj"
+                                    "src/aoc2021/04.clj"
                                     ]}))

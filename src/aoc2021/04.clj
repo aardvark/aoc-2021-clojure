@@ -2,6 +2,7 @@
 (ns aoc2021.04
   (:require [clojure.string]))
 
+
 ;; Parsing input to the collection of input sequence and boards:
 (let [[input & boards]
       (into []
