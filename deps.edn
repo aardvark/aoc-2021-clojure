@@ -1,4 +1,4 @@
 {:paths ["src" "resources"]
- :deps {io.github.nextjournal/clerk {:mvn/version "0.3.233"}}
+ :deps {io.github.nextjournal/clerk {:mvn/version "0.4.316"}}
  :aliases {:nRepl
             {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}}}}}

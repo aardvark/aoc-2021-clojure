@@ -2,3 +2,6 @@
 .idea
 .nrepl-port
 aoc-2021-clojure.iml
+.calva/
+.cpcache/
+.clj-kondo/
