@@ -13,4 +13,7 @@
                                     "src/aoc2021/02.clj"
                                     "src/aoc2021/03.clj"
                                     "src/aoc2021/04.clj"
+                                    "src/aoc2021/05.clj"
+                                    "src/aoc2021/06.clj"
+                                    "src/aoc2021/07.clj"
                                     ]}))
